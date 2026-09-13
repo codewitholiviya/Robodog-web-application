@@ -1,9 +1,58 @@
 // =====================================
-// ROBO DOG CONTROLLER
+// ROBODOG API
 // =====================================
 
-const API_URL =
-    "http://127.0.0.1:5000/api/robot";
+const API_URL = "http://127.0.0.1:5000/api/robot";
+
+
+// =====================================
+// COMMAND MESSAGE
+// =====================================
+
+function getCommandMessage(command) {
+
+    if (command === "forward") {
+        return "🤖 RoboDog is moving Forward 🚀";
+    }
+
+    if (command === "backward") {
+        return "🤖 RoboDog is moving Backward 🔄";
+    }
+
+    if (command === "left") {
+        return "🤖 RoboDog is turning Left ◀️";
+    }
+
+    if (command === "right") {
+        return "🤖 RoboDog is turning Right ▶️";
+    }
+
+    if (command === "stop") {
+        return "🛑 RoboDog has stopped.";
+    }
+
+    if (command === "patrol") {
+        return "🐕 RoboDog is on Patrol.";
+    }
+
+    return "🤖 RoboDog is ready.";
+}
+
+
+// =====================================
+// SHOW MESSAGE
+// =====================================
+
+function showControlMessage(command) {
+
+    const controlMessage =
+        document.getElementById("controlMessage");
+
+    if (controlMessage) {
+        controlMessage.textContent =
+            getCommandMessage(command);
+    }
+}
 
 
 // =====================================
@@ -24,249 +73,197 @@ async function sendRobotCommand(command) {
             }
         );
 
+        const data = await response.json();
 
-        const data =
-            await response.json();
-
-
-        console.log(
-            "Robot Response:",
-            data
-        );
-
+        console.log("Robot Response:", data);
 
         if (response.ok) {
 
-            let message = "";
+            // Immediately show message on Controller
+            showControlMessage(data.command);
 
+        } else {
 
-            if (command === "forward") {
+            const controlMessage =
+                document.getElementById("controlMessage");
 
-                message =
-                    "🤖 RoboDog is moving Forward 🚀";
-
+            if (controlMessage) {
+                controlMessage.textContent =
+                    "❌ Command failed.";
             }
-
-            else if (command === "backward") {
-
-                message =
-                    "🤖 RoboDog is moving Backward 🔄";
-
-            }
-
-            else if (command === "left") {
-
-                message =
-                    "🤖 RoboDog is turning Left ◀️";
-
-            }
-
-            else if (command === "right") {
-
-                message =
-                    "🤖 RoboDog is turning Right ▶️";
-
-            }
-
-            else if (command === "stop") {
-
-                message =
-                    "🛑 RoboDog has stopped.";
-
-            }
-
-            else {
-
-                message =
-                    `🤖 Command: ${command}`;
-
-            }
-
-
-            showMessage(message);
-
-
         }
 
-        else {
+    } catch (error) {
 
-            showMessage(
-                data.message ||
-                "Command failed.",
-                true
-            );
+        console.error("Robot Command Error:", error);
 
+        const controlMessage =
+            document.getElementById("controlMessage");
+
+        if (controlMessage) {
+            controlMessage.textContent =
+                "❌ Cannot connect to server.";
         }
-
     }
+}
 
-    catch (error) {
+
+// =====================================
+// GET CURRENT ROBOT STATUS
+// =====================================
+
+async function getRobotStatus() {
+
+    try {
+
+        const response = await fetch(
+            `${API_URL}/status`
+        );
+
+        const data = await response.json();
+
+        console.log("Current Robot State:", data);
+
+        if (response.ok) {
+
+            // IMPORTANT:
+            // Read command saved by Dashboard
+            // OR Controller
+
+            showControlMessage(data.command);
+
+        }
+
+    } catch (error) {
 
         console.error(
-            "Robot Command Error:",
+            "Robot Status Error:",
             error
         );
-
-
-        showMessage(
-            "❌ Cannot connect to server.",
-            true
-        );
-
     }
-
 }
 
 
-
 // =====================================
-// SHOW MESSAGE
+// CONTROLLER BUTTONS
 // =====================================
 
-function showMessage(
-    text,
-    error = false
-) {
+const forwardBtn =
+    document.getElementById("forwardBtn");
 
-    const message =
-        document.getElementById(
-            "controllerMessage"
-        );
+const backwardBtn =
+    document.getElementById("backwardBtn");
 
+const leftBtn =
+    document.getElementById("leftBtn");
 
-    if (!message) {
+const rightBtn =
+    document.getElementById("rightBtn");
 
-        console.error(
-            "controllerMessage not found!"
-        );
-
-        return;
-
-    }
-
-
-    message.textContent = text;
-
-
-    if (error) {
-
-        message.style.color =
-            "#dc2626";
-
-        message.style.background =
-            "#fef2f2";
-
-        message.style.borderColor =
-            "#fecaca";
-
-    }
-
-    else {
-
-        message.style.color =
-            "#2563eb";
-
-        message.style.background =
-            "#f5f8ff";
-
-        message.style.borderColor =
-            "#bfdbfe";
-
-    }
-
-}
-
+const stopBtn =
+    document.getElementById("stopBtn");
 
 
 // =====================================
 // FORWARD
 // =====================================
 
-document
-    .getElementById("forwardBtn")
-    ?.addEventListener(
+if (forwardBtn) {
+
+    forwardBtn.addEventListener(
         "click",
         function () {
 
-            sendRobotCommand(
-                "forward"
-            );
+            sendRobotCommand("forward");
 
         }
     );
-
+}
 
 
 // =====================================
 // BACKWARD
 // =====================================
 
-document
-    .getElementById("backwardBtn")
-    ?.addEventListener(
+if (backwardBtn) {
+
+    backwardBtn.addEventListener(
         "click",
         function () {
 
-            sendRobotCommand(
-                "backward"
-            );
+            sendRobotCommand("backward");
 
         }
     );
-
+}
 
 
 // =====================================
 // LEFT
 // =====================================
 
-document
-    .getElementById("leftBtn")
-    ?.addEventListener(
+if (leftBtn) {
+
+    leftBtn.addEventListener(
         "click",
         function () {
 
-            sendRobotCommand(
-                "left"
-            );
+            sendRobotCommand("left");
 
         }
     );
-
+}
 
 
 // =====================================
 // RIGHT
 // =====================================
 
-document
-    .getElementById("rightBtn")
-    ?.addEventListener(
+if (rightBtn) {
+
+    rightBtn.addEventListener(
         "click",
         function () {
 
-            sendRobotCommand(
-                "right"
-            );
+            sendRobotCommand("right");
 
         }
     );
-
+}
 
 
 // =====================================
 // STOP
 // =====================================
 
-document
-    .getElementById("stopBtn")
-    ?.addEventListener(
+if (stopBtn) {
+
+    stopBtn.addEventListener(
         "click",
         function () {
 
-            sendRobotCommand(
-                "stop"
-            );
+            sendRobotCommand("stop");
 
         }
     );
+}
+
+
+// =====================================
+// FIRST STATUS LOAD
+// =====================================
+
+getRobotStatus();
+
+
+// =====================================
+// AUTOMATIC SYNC
+// =====================================
+
+// Every 1 second Controller
+// checks the shared robot command
+
+setInterval(
+    getRobotStatus,
+    1000
+);
